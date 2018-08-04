@@ -1,0 +1,59 @@
+#quizcontainer {
+  max-width: 50%;
+  position: relative;
+  display: inline-block;
+  left: auto;
+  transition: 300 all ease-in-out;
+}
+
+.result {
+  margin-top: 50px;
+  line-height: 1.5em;
+  font-size: 1.5em;
+}
+
+input {
+  display: none;
+}
+
+label {
+  width: 100%;
+  display: inline-block;
+  cursor: pointer;
+  text-align: center;
+  margin: 0;
+}
+
+input:checked + label {
+  background-color: #fae;
+}
+
+.questionTile {
+  width: 100%;
+  display: inline-block;
+  position: relative;
+  opacity: 100%;
+  left: 0;
+}
+
+.questionTile-transition {
+  transition: all 800ms ease-in-out;
+}
+
+.questionTile-nxt {
+  opacity: 0;
+  left: 50%;
+}
+
+.questionTile-prv {
+  opacity: 0;
+  left: -50%;
+}
+
+.btns {
+  position: absolute;
+  top: 300px;
+  width: 300px;
+}
+
+/*# sourceMappingURL=master.css.map */

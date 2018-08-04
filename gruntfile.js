@@ -17,13 +17,13 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
         files: [{
-          expand: true,       // Enable dynamic expansion.
-          cwd: 'scripts/dist/babel/',        // Src matches are relative to this path.
-          src: ['**/*.js'],  // Actual pattern(s) to match.
-          dest: 'build',      // Destination path prefix.
-          ext: '.js',     // Dest filepaths will have this extension.
-          extDot: 'first'     // Extensions in filenames begin after the first dot
-      }]
+          expand: true, // Enable dynamic expansion.
+          cwd: 'scripts/dist/babel/', // Src matches are relative to this path.
+          src: ['**/*.js'], // Actual pattern(s) to match.
+          dest: 'build/scripts', // Destination path prefix.
+          ext: '.js', // Dest filepaths will have this extension.
+          extDot: 'first', // Extensions in filenames begin after the first dot
+      }],
       },
     },
 
@@ -34,20 +34,20 @@ module.exports = function(grunt) {
       },
       dist: {
         files: [{
-          expand: true,       // Enable dynamic expansion.
-          cwd: 'scripts/src/',        // Src matches are relative to this path.
-          src: ['**/*.js'],  // Actual pattern(s) to match.
-          dest: 'scripts/dist/babel',      // Destination path prefix.
-          ext: '.js',     // Dest filepaths will have this extension.
-          extDot: 'first'     // Extensions in filenames begin after the first dot
-      }]
+          expand: true, // Enable dynamic expansion.
+          cwd: 'scripts/src/', // Src matches are relative to this path.
+          src: ['**/*.js'], // Actual pattern(s) to match.
+          dest: 'scripts/dist/babel', // Destination path prefix.
+          ext: '.js', // Dest filepaths will have this extension.
+          extDot: 'first', // Extensions in filenames begin after the first dot
+      }],
       },
     },
 
     autoprefixer: {
       single_file: {
-        src: 'styles/css/master.css',
-        dest: 'styles/css/master.css',
+        src: 'build/css/master.css',
+        dest: 'build/css/master.css',
       },
     },
 
@@ -57,7 +57,7 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'styles/css/master.css': 'styles/sass/style.sass',
+          'build/styles/master.css': 'styles/sass/master.sass',
         },
       },
     },
