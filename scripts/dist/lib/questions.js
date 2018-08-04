@@ -4,9 +4,52 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = {
+  events: {},
+
+  // publish
+  emit: function emit(eventName, data) {
+    if (this.events[eventName]) {
+      this.events[eventName].forEach(function (fn) {
+        fn(data);
+      });
+    }
+  },
+
+  // subscribe
+  subscribe: function subscribe(eventName, fn) {
+    this.events[eventName] = this.events[eventName] || [];
+    this.events[eventName].push(fn);
+  },
+
+  // unsubscribe
+  unsubscribe: function unsubscribe(eventName, fn) {
+    if (this.events[eventName]) {
+      this.events[eventName] = this.events[eventName].filter(function (item) {
+        return item.name !== fn.name;
+      });
+    }
+  }
+
+};
+
+},{}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _pubsub = require('./pubsub.js');
+
+var _pubsub2 = _interopRequireDefault(_pubsub);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function () {
-  return [{
+  var indexTracker = 0;
+
+  var questArr = [{
     'question': 'Was ist der Sinn des Lebens?',
     'answers': [{
       'text': '42',
@@ -51,7 +94,65 @@ exports.default = function () {
       'text': 'Falsch',
       'isCorrect': false
     }]
+  }, {
+    'question': 'Frage 4',
+    'answers': [{
+      'text': 'Richtig',
+      'isCorrect': true
+    }, {
+      'text': 'Falsch',
+      'isCorrect': false
+    }, {
+      'text': 'Falsch',
+      'isCorrect': false
+    }, {
+      'text': 'Falsch',
+      'isCorrect': false
+    }]
   }];
-};
 
-},{}]},{},[1]);
+  _randomizeArray(questArr);
+
+  function init(args) {
+    _pubsub2.default.emit('questionSent', questArr[0]);
+    _pubsub2.default.emit('firstQuestion', '');
+  };
+  _pubsub2.default.subscribe('updateQuestion', function sendQuestion(index) {
+    indexTracker = index;
+    if (index == questArr.length) {
+      _pubsub2.default.emit('finishQuiz', questArr);
+    } else {
+      _pubsub2.default.emit('questionSent', questArr[index]);
+      if (index == 0) {
+        _pubsub2.default.emit('firstQuestion', '');
+      } else if (index == questArr.length - 1) {
+        _pubsub2.default.emit('lastQuestion', '');
+      }
+    }
+  });
+
+  _pubsub2.default.subscribe('answerChosen', function saveAnswer(data) {
+    questArr[indexTracker].answered = data;
+  });
+
+  function _randomizeArray(arr) {
+    var array = arr;
+    for (var i = 0; i < array.length; i++) {
+      var randIndex = Math.floor(Math.random() * array.length);
+      var tmp = array[i];
+      array[i] = array[randIndex];
+      array[randIndex] = tmp;
+      if (array[randIndex].answers) {
+        console.log('bedingung erfüllt.');
+        _randomizeArray(array[randIndex].answers);
+      }
+    };
+    return array;
+  };
+
+  return {
+    init: init
+  };
+}();
+
+},{"./pubsub.js":1}]},{},[2]);

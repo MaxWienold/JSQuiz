@@ -22,8 +22,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function startQuiz(args) {
   _questions2.default.init();
 }
-
-startQuiz();
+window.onload = function () {
+  startQuiz();
+};
 
 // pubSub.console.log('from index');
 // quiz.startQuiz();
@@ -59,7 +60,6 @@ exports.default = function () {
     try {
       answerForm.removeEventListener('change', eventAnswerChosen, false);
     } catch (e) {} finally {};
-
     // assigning class names to trigger CSS-transitions
     var toggleOpp = 'questionTile-prv';
     if (classToggle == 'questionTile-prv') {
@@ -119,9 +119,9 @@ exports.default = function () {
   });
 
   function answerChosen() {
+    console.log('answer chosen, alright!');
     var answersValue = Number(document.getElementById('answerfield').answers.value);
     // answersValue = Number(answersValue);
-    console.log(answersValue);
     _pubsub2.default.emit('answerChosen', answersValue);
   }
 }();
@@ -140,52 +140,52 @@ var _pubsub2 = _interopRequireDefault(_pubsub);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function () {
-  var questTracker = 0;
-
   var btnNext = document.getElementById('next');
   var btnPrev = document.getElementById('prev');
 
-  btnNext.addEventListener('click', nextQuestion);
-  btnPrev.addEventListener('click', prevQuestion);
+  btnNext.addEventListener('click', _nextQuestion);
+  btnPrev.addEventListener('click', _prevQuestion);
 
-  _pubsub2.default.subscribe('firstQuestion', function noPrevButton() {
+  /*
+    CHANGING OF BUTTONS' TEXTS
+  */
+  _pubsub2.default.subscribe('firstQuestion', function _noPrevButton() {
+
     btnPrev.style.visibility = 'hidden';
   });
 
-  _pubsub2.default.subscribe('lastQuestion', function btnEndQuiz() {
+  _pubsub2.default.subscribe('lastQuestion', function _btnEndQuiz() {
     btnNext.innerHTML = 'Quiz beenden';
   });
 
-  _pubsub2.default.subscribe('questionSent', function normalQuestion(question) {
+  _pubsub2.default.subscribe('questionSent', function _normalQuestion(question) {
     btnPrev.style.visibility = 'initial';
     btnNext.innerHTML = 'nächste Frage';
     btnNext.disabled = true;
     if ('answered' in question) {
+      // was the question answered before?
       btnNext.disabled = false;
     }
   });
-  var changeNextBtn = function changeNextBtn() {
+
+  _pubsub2.default.subscribe('answerChosen', _changeNextBtn);
+
+  function _changeNextBtn() {
+    // enable button when radio clicked
     btnNext.disabled = false;
   };
 
-  _pubsub2.default.subscribe('answerChosen', changeNextBtn);
-
-  function nextQuestion() {
-    questTracker++;
-
-    _pubsub2.default.emit('nextQuestion', questTracker);
-    _pubsub2.default.emit('updateQuestion', questTracker);
+  function _nextQuestion() {
+    _pubsub2.default.emit('nextQuestion');
   };
 
-  function prevQuestion() {
-    questTracker--;
-    _pubsub2.default.emit('prevQuestion', questTracker);
-    _pubsub2.default.emit('updateQuestion', questTracker);
+  function _prevQuestion() {
+    _pubsub2.default.emit('prevQuestion');
   };
 
   function destroy() {
-    btnNext.removeEventListener('click', nextQuestion);
-    btnPrev.removeEventListener('click', prevQuestion);
+    btnNext.removeEventListener('click', _nextQuestion);
+    btnPrev.removeEventListener('click', _prevQuestion);
   }
   return {
     destroy: destroy
@@ -204,6 +204,7 @@ exports.default = {
   // publish
   emit: function emit(eventName, data) {
     if (this.events[eventName]) {
+      console.log(this.events[eventName]);
       this.events[eventName].forEach(function (fn) {
         fn(data);
       });
@@ -214,6 +215,7 @@ exports.default = {
   subscribe: function subscribe(eventName, fn) {
     this.events[eventName] = this.events[eventName] || [];
     this.events[eventName].push(fn);
+    console.log(this.events);
   },
 
   // unsubscribe
@@ -241,8 +243,6 @@ var _pubsub2 = _interopRequireDefault(_pubsub);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function () {
-  var indexTracker = 0;
-
   var questArr = [{
     'question': 'Was ist der Sinn des Lebens?',
     'answers': [{
@@ -305,29 +305,38 @@ exports.default = function () {
     }]
   }];
 
+  var indexTracker = 0;
   _randomizeArray(questArr);
 
-  function init(args) {
-    _pubsub2.default.emit('questionSent', questArr[0]);
-    _pubsub2.default.emit('firstQuestion', '');
-  };
-  _pubsub2.default.subscribe('updateQuestion', function sendQuestion(index) {
-    indexTracker = index;
-    if (index == questArr.length) {
-      _pubsub2.default.emit('finishQuiz', questArr);
-    } else {
-      _pubsub2.default.emit('questionSent', questArr[index]);
-      if (index == 0) {
-        _pubsub2.default.emit('firstQuestion', '');
-      } else if (index == questArr.length - 1) {
-        _pubsub2.default.emit('lastQuestion', '');
-      }
-    }
+  _pubsub2.default.subscribe('prevQuestion', function sndPrvQstn() {
+    indexTracker--;
+    _sendQuestion();
+  });
+  _pubsub2.default.subscribe('nextQuestion', function sndNxtQstn() {
+    indexTracker++;
+    _sendQuestion();
   });
 
   _pubsub2.default.subscribe('answerChosen', function saveAnswer(data) {
     questArr[indexTracker].answered = data;
   });
+
+  function _sendQuestion() {
+    if (indexTracker == questArr.length) {
+      _pubsub2.default.emit('finishQuiz', questArr);
+    } else {
+      _pubsub2.default.emit('questionSent', questArr[indexTracker]);
+      if (indexTracker == 0) {
+        _pubsub2.default.emit('firstQuestion', '');
+      } else if (indexTracker == questArr.length - 1) {
+        _pubsub2.default.emit('lastQuestion', '');
+      }
+    }
+  }
+
+  function init(args) {
+    _sendQuestion();
+  };
 
   function _randomizeArray(arr) {
     var array = arr;
@@ -337,11 +346,9 @@ exports.default = function () {
       array[i] = array[randIndex];
       array[randIndex] = tmp;
       if (array[randIndex].answers) {
-        console.log('bedingung erfüllt.');
         _randomizeArray(array[randIndex].answers);
       }
     };
-    return array;
   };
 
   return {
@@ -377,12 +384,10 @@ exports.default = function () {
     var percent = Number(rightQuestions / questionsTotal * 100).toFixed(0);
     var message = getMessage(percent);
 
-    console.log(message);
-    console.log('Du hast ' + percent + '% richtig beantwortet.');
-
     var resMessage = document.createElement('div');
-    console.log('Du hast ' + percent + '</br>% richtig beantwortet.');
+
     resMessage.innerHTML = message + '</br>Du hast ' + percent + '% richtig beantwortet.';
+    resMessage.className = 'result';
     animateUp(quizcontainer, resMessage, 50, 100);
   });
 
@@ -393,33 +398,30 @@ exports.default = function () {
           start = timestamp;
         };
 
-        // console.log(top - step);
+        //
         element.style.top = top - step + '%';
         top = top - step;
         if (Math.abs(top) <= value - 3) {
           window.requestAnimationFrame(_up);
         } else {
-          console.log('else');
           window.cancelAnimationFrame(_up);
           start = null;
-          // step *= 2;
+          step *= 2;
           while (element.hasChildNodes()) {
             element.removeChild(element.firstChild);
           }
           element.appendChild(toRender);
-          console.log('else');
+
           window.requestAnimationFrame(_down);
         }
       };
 
       var _down = function _down(timestamp) {
-        if (!start) {
-          start = timestamp;
-        };
-        console.log(step);
+        if (!start) start = timestamp;
+
         element.style.top = top + step + '%';
         top += step;
-        console.log(Math.abs(top));
+
         if (top <= 0) {
           window.requestAnimationFrame(_down);
         } else {
@@ -433,9 +435,9 @@ exports.default = function () {
       var top = element.style.top;
 
       window.requestAnimationFrame(_up);
-    } catch (e) {
-      console.log('animateUp: Error');
-    }
+
+      ;
+    } catch (e) {}
   };
 
   function getMessage(num) {

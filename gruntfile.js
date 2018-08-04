@@ -20,7 +20,7 @@ module.exports = function(grunt) {
           expand: true,       // Enable dynamic expansion.
           cwd: 'scripts/dist/babel/',        // Src matches are relative to this path.
           src: ['**/*.js'],  // Actual pattern(s) to match.
-          dest: 'scripts/dist/',      // Destination path prefix.
+          dest: 'build',      // Destination path prefix.
           ext: '.js',     // Dest filepaths will have this extension.
           extDot: 'first'     // Extensions in filenames begin after the first dot
       }]
